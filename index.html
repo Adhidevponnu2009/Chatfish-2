@@ -12,45 +12,25 @@ font-family:Arial;
 margin:0;
 background:linear-gradient(135deg,#0ea5e9,#38bdf8);
 min-height:100vh;
+color:white;
 }
-
-/* HEADER */
 
 header{
 display:flex;
 justify-content:space-between;
 align-items:center;
 padding:15px 20px;
-color:white;
 font-size:22px;
 font-weight:bold;
 }
-
-/* CART */
 
 .cart-btn{
 background:white;
 color:#0284c7;
 padding:8px 14px;
 border-radius:20px;
-font-size:14px;
 text-decoration:none;
 }
-
-/* OFFER */
-
-.offer{
-background:linear-gradient(90deg,#0ea5e9,#22c55e);
-color:white;
-text-align:center;
-padding:12px;
-font-size:18px;
-font-weight:bold;
-margin:10px;
-border-radius:8px;
-}
-
-/* PRODUCTS GRID */
 
 .products{
 display:grid;
@@ -59,20 +39,13 @@ gap:20px;
 padding:20px;
 }
 
-/* CARD */
-
 .product-card{
 background:rgba(255,255,255,0.2);
 backdrop-filter:blur(15px);
 border-radius:18px;
-border:1px solid rgba(255,255,255,0.3);
 padding:18px;
 text-align:center;
-color:white;
-box-shadow:0 8px 32px rgba(0,0,0,0.15);
 }
-
-/* IMAGE */
 
 .product-card img{
 width:100%;
@@ -82,16 +55,6 @@ border-radius:12px;
 margin-bottom:10px;
 }
 
-/* PRICE */
-
-.price{
-font-size:18px;
-font-weight:bold;
-margin-bottom:10px;
-}
-
-/* BUTTON */
-
 .add-btn{
 background:white;
 color:#0284c7;
@@ -100,21 +63,6 @@ padding:10px;
 border-radius:8px;
 cursor:pointer;
 width:100%;
-font-weight:bold;
-}
-
-/* POPUP */
-
-.cart-popup{
-position:fixed;
-bottom:20px;
-right:20px;
-background:#22c55e;
-color:white;
-padding:12px 18px;
-border-radius:25px;
-display:none;
-box-shadow:0 5px 20px rgba(0,0,0,0.3);
 }
 
 </style>
@@ -124,56 +72,42 @@ box-shadow:0 5px 20px rgba(0,0,0,0.3);
 <body>
 
 <header>
-
 🐟 ChatFish
-
-<a href="cart.html" class="cart-btn">
-Cart 🛒
-</a>
-
+<a href="cart.html" class="cart-btn">Cart 🛒</a>
 </header>
 
-<div class="offer">
-🔥 Fresh Fish Delivered To Your Door
-</div>
-
 <div class="products" id="products">
-
 Loading products...
-
-</div>
-
-<div class="cart-popup" id="cartPopup">
-Added to Cart 🐟
 </div>
 
 <script>
 
-/* API */
-
 let API="https://api.sheety.co/3dc786747b2bc829b0ad694ac2ac5ce8/fishShop/sheet1"
 
-/* LOAD PRODUCTS */
-
 fetch(API)
+.then(response => {
 
-.then(res=>res.json())
+if(!response.ok){
+throw new Error("Network response not OK")
+}
 
-.then(data=>{
+return response.json()
 
-let products=data.sheet1
+})
+
+.then(data => {
+
+console.log("API DATA:",data)
 
 let container=document.getElementById("products")
 
 container.innerHTML=""
 
-/* LOOP PRODUCTS */
+let products=data.sheet1
 
 products.forEach(p=>{
 
-if(!p.fish) return
-
-container.innerHTML+=`
+container.innerHTML += `
 
 <div class="product-card">
 
@@ -181,7 +115,7 @@ container.innerHTML+=`
 
 <h3>${p.fish}</h3>
 
-<p class="price">QAR ${p.price}</p>
+<p>QAR ${p.price}</p>
 
 <button class="add-btn" onclick="addToCart('${p.fish}','${p.price}')">
 Add to Cart
@@ -195,16 +129,18 @@ Add to Cart
 
 })
 
-.catch(error=>{
-
-document.getElementById("products").innerHTML=
-"<p style='color:white'>Failed to load products</p>"
+.catch(error => {
 
 console.error(error)
 
-})
+document.getElementById("products").innerHTML = `
+<div style="padding:20px">
+❌ Failed to load products<br><br>
+Check API connection
+</div>
+`
 
-/* ADD TO CART */
+})
 
 function addToCart(name,price){
 
@@ -218,21 +154,7 @@ qty:1
 
 localStorage.setItem("cart",JSON.stringify(cart))
 
-showPopup()
-
-}
-
-/* POPUP */
-
-function showPopup(){
-
-let popup=document.getElementById("cartPopup")
-
-popup.style.display="block"
-
-setTimeout(()=>{
-popup.style.display="none"
-},2000)
+alert("Added to Cart 🐟")
 
 }
 
