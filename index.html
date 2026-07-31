@@ -235,6 +235,16 @@
     border:2px solid var(--cream);
   }
 
+  .flying-fish{
+    position:fixed;
+    left:0;
+    top:0;
+    font-size:1.6em;
+    pointer-events:none;
+    z-index:1500;
+    filter:drop-shadow(0 4px 8px rgba(11,37,69,0.3));
+  }
+
   /* TOAST */
   #notify{
     position:fixed;
@@ -308,7 +318,19 @@ let container=document.getElementById("products")
 container.classList.remove("loading")
 container.innerHTML=""
 
-let products=data.sheet1
+let products=(data.sheet1 || []).filter(p =>
+p.fish && String(p.fish).trim() !== "" &&
+p.price !== undefined && p.price !== null && String(p.price).trim() !== "" &&
+p.imageLink && String(p.imageLink).trim() !== ""
+)
+
+if(products.length === 0){
+
+container.classList.add("error")
+container.innerHTML = "No fish available right now — check back soon 🐟"
+return
+
+}
 
 products.forEach(p=>{
 
@@ -322,7 +344,7 @@ container.innerHTML += `
 
 <p class="price">Fresh today &middot; <strong>QAR ${p.price}</strong></p>
 
-<button class="add-btn" onclick="addToCart('${p.fish}','${p.price}')">
+<button class="add-btn" onclick="addToCart('${p.fish}','${p.price}',this)">
 Add to Cart
 </button>
 
@@ -349,7 +371,7 @@ Check your connection and try again
 
 })
 
-function addToCart(name,price){
+function addToCart(name,price,btn){
 
 let cart=JSON.parse(localStorage.getItem("cart")) || []
 
@@ -363,7 +385,67 @@ localStorage.setItem("cart",JSON.stringify(cart))
 
 showNotification(name+" added to cart 🐟")
 updateCartCount()
+
+if(btn){
+launchFish(btn)
+}else{
 pulseCart()
+}
+
+}
+
+function launchFish(originEl){
+
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+pulseCart()
+return
+}
+
+const cartBtn=document.getElementById("floatingCart")
+
+const startRect=originEl.getBoundingClientRect()
+const endRect=cartBtn.getBoundingClientRect()
+
+const startX=startRect.left+startRect.width/2
+const startY=startRect.top+startRect.height/2
+const endX=endRect.left+endRect.width/2
+const endY=endRect.top+endRect.height/2
+
+const controlX=(startX+endX)/2
+const controlY=Math.min(startY,endY)-140
+
+const fish=document.createElement("div")
+fish.className="flying-fish"
+fish.innerText="🐟"
+document.body.appendChild(fish)
+
+const duration=700
+const startTime=performance.now()
+
+function animate(now){
+
+let t=Math.min((now-startTime)/duration,1)
+
+const x=(1-t)*(1-t)*startX + 2*(1-t)*t*controlX + t*t*endX
+const y=(1-t)*(1-t)*startY + 2*(1-t)*t*controlY + t*t*endY
+
+const scale=1-0.55*t
+const rotate=380*t
+
+fish.style.transform=
+`translate(${x}px, ${y}px) translate(-50%,-50%) scale(${scale}) rotate(${rotate}deg)`
+fish.style.opacity=1-t*0.25
+
+if(t<1){
+requestAnimationFrame(animate)
+}else{
+fish.remove()
+pulseCart()
+}
+
+}
+
+requestAnimationFrame(animate)
 
 }
 
