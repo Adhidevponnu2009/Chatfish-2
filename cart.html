@@ -1,169 +1,340 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-
-<title>ChatFish Cart</title>
-
+<meta charset="UTF-8">
+<title>ChatFish — Your Cart</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
+  :root{
+    --navy:#0B2545;
+    --navy-deep:#081b35;
+    --teal:#0F9E93;
+    --teal-light:#E4F5F3;
+    --coral:#E8543E;
+    --coral-dark:#c8432f;
+    --cream:#F7F4EE;
+    --paper:#FFFFFF;
+    --ink:#1B2430;
+    --ink-soft:#5B6472;
+    --line:#E4E1D8;
+    --radius:14px;
+  }
 
-body{
-font-family:Arial;
-background:#eef6ff;
-margin:0;
-padding:20px;
-}
+  *{box-sizing:border-box;}
 
-h2{
-text-align:center;
-color:#0f172a;
-}
+  body{
+    font-family:'Work Sans', Arial, sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    margin:0;
+    padding:0 0 40px;
+    -webkit-font-smoothing:antialiased;
+  }
 
-/* CART ITEM */
+  header{
+    background:var(--navy);
+    background-image:
+      radial-gradient(circle at 15% 30%, rgba(15,158,147,0.35), transparent 45%),
+      linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
+    color:white;
+    padding:24px 20px 28px;
+    text-align:center;
+    box-shadow:0 8px 24px rgba(8,27,53,0.25);
+  }
 
-.cart-item{
-background:white;
-padding:15px;
-border-radius:10px;
-margin-bottom:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
-}
+  h2{
+    margin:0;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.7em;
+    letter-spacing:0.2px;
+  }
+  h2 span{color:var(--teal);}
+  .header-tag{
+    margin-top:6px;
+    font-size:0.78em;
+    color:rgba(255,255,255,0.6);
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-weight:500;
+  }
 
-.remove{
-background:#ef4444;
-border:none;
-color:white;
-padding:8px 10px;
-border-radius:6px;
-cursor:pointer;
-}
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:0 20px;
+  }
 
-/* TOTAL BOX */
+  .section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72em;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:26px 0 14px;
+  }
 
-.total-box{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
-margin-top:20px;
-text-align:center;
-}
+  #cart p{
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'Fraunces', serif;
+    font-size:1.1em;
+    padding:40px 0;
+  }
 
-.order{
-background:#2563eb;
-color:white;
-border:none;
-padding:12px 20px;
-border-radius:8px;
-cursor:pointer;
-margin-top:10px;
-font-size:16px;
-}
+  /* CART ITEM */
+  .cart-item{
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:16px;
+    border-radius:var(--radius);
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:box-shadow .2s ease, transform .2s ease;
+  }
+  .cart-item:hover{
+    box-shadow:0 10px 24px rgba(11,37,69,0.08);
+    transform:translateY(-1px);
+  }
+  .cart-item b{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:1.08em;
+    color:var(--navy);
+  }
+  .cart-item p{
+    margin:4px 0 0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85em;
+    color:var(--ink-soft);
+  }
 
-/* POPUP */
+  .remove{
+    background:none;
+    border:none;
+    color:var(--coral);
+    font-size:0.85em;
+    font-weight:600;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    padding:6px 4px;
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+  .remove:hover{color:var(--coral-dark);}
 
-.popup{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.5);
-align-items:center;
-justify-content:center;
-}
+  /* TOTAL / TICKET */
+  .total-box{
+    background:var(--navy);
+    background-image:radial-gradient(circle at 90% 0%, rgba(15,158,147,0.3), transparent 55%);
+    color:white;
+    padding:24px;
+    border-radius:var(--radius);
+    margin-top:24px;
+    text-align:center;
+  }
+  .total-box h3{
+    margin:0 0 4px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.75em;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.6);
+    font-weight:500;
+  }
+  .total-amount{
+    font-family:'Fraunces', serif;
+    font-size:2em;
+    font-weight:600;
+  }
+  .total-amount .code{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.42em;
+    color:var(--teal);
+    vertical-align:middle;
+    margin-right:4px;
+  }
 
-.popup-box{
-background:white;
-padding:20px;
-border-radius:12px;
-width:90%;
-max-width:400px;
-}
+  .order{
+    background:var(--coral);
+    color:white;
+    border:none;
+    padding:14px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:18px;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:0.95em;
+    letter-spacing:0.02em;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .order:hover{background:var(--coral-dark); transform:translateY(-1px);}
 
-/* INPUTS */
+  /* POPUPS */
+  .popup{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(8,27,53,0.55);
+    backdrop-filter:blur(2px);
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    padding:20px;
+  }
 
-input, textarea{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-border:1px solid #ccc;
-}
+  .popup-box{
+    background:var(--paper);
+    padding:26px;
+    border-radius:16px;
+    width:100%;
+    max-width:420px;
+    max-height:90vh;
+    overflow-y:auto;
+    box-shadow:0 24px 60px rgba(8,27,53,0.3);
+  }
+  .popup-box h3{
+    margin:0 0 14px;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    color:var(--navy);
+    font-size:1.3em;
+  }
 
-.location{
-background:#0ea5e9;
-color:white;
-border:none;
-padding:10px;
-margin-top:10px;
-border-radius:6px;
-width:100%;
-cursor:pointer;
-}
+  #orderItems p{
+    margin:0 0 6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85em;
+    color:var(--ink-soft);
+    padding-bottom:6px;
+    border-bottom:1px dashed var(--line);
+  }
 
-/* SUBMIT BUTTON */
+  #orderTotal{
+    font-family:'JetBrains Mono', monospace;
+  }
+  .popup-box h4{
+    font-family:'Fraunces', serif;
+    color:var(--navy);
+    font-weight:600;
+    margin:12px 0 18px;
+  }
 
-.submit{
-background:#22c55e;
-color:white;
-border:none;
-padding:12px;
-margin-top:10px;
-border-radius:6px;
-width:100%;
-font-size:16px;
-cursor:pointer;
-position:relative;
-overflow:hidden;
-}
+  /* INPUTS */
+  input, textarea{
+    width:100%;
+    padding:12px 14px;
+    margin-top:10px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size:0.95em;
+    color:var(--ink);
+    transition:border-color .15s ease, background .15s ease;
+  }
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:var(--teal);
+    background:var(--paper);
+    box-shadow:0 0 0 3px var(--teal-light);
+  }
+  input::placeholder, textarea::placeholder{color:#9aa2ad;}
+  textarea{resize:vertical; min-height:70px;}
 
-/* RIPPLE EFFECT */
+  .location{
+    background:var(--teal-light);
+    color:var(--navy);
+    border:1px solid var(--teal);
+    padding:11px;
+    margin-top:12px;
+    border-radius:9px;
+    width:100%;
+    cursor:pointer;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:0.9em;
+    transition:background .15s ease;
+  }
+  .location:hover{background:#d3efec;}
 
-.ripple{
-position:absolute;
-border-radius:50%;
-background:rgba(255,255,255,0.6);
-transform:scale(0);
-animation:ripple 0.6s linear;
-pointer-events:none;
-}
+  /* SUBMIT BUTTON */
+  .submit{
+    background:var(--coral);
+    color:white;
+    border:none;
+    padding:13px;
+    margin-top:14px;
+    border-radius:9px;
+    width:100%;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:0.95em;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+    transition:background .15s ease;
+  }
+  .submit:hover{background:var(--coral-dark);}
 
-@keyframes ripple{
-to{
-transform:scale(4);
-opacity:0;
-}
-}
+  /* RIPPLE EFFECT */
+  .ripple{
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,255,255,0.6);
+    transform:scale(0);
+    animation:ripple 0.6s linear;
+    pointer-events:none;
+  }
+  @keyframes ripple{
+    to{ transform:scale(4); opacity:0; }
+  }
 
-/* THANK POPUP */
+  /* THANK POPUP */
+  .thank{ text-align:center; }
+  .thank h3{
+    font-size:1.4em;
+  }
+  .thank p{
+    color:var(--ink-soft);
+    line-height:1.5;
+    font-size:0.95em;
+  }
+  .thank b{color:var(--navy);}
 
-.thank{
-text-align:center;
-}
-
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
 </style>
 
 </head>
 
 <body>
 
-<h2>🐟 ChatFish Cart</h2>
+<header>
+  <h2>🐟 Chat<span>Fish</span></h2>
+  <div class="header-tag">Fresh Catch, Delivered</div>
+</header>
 
+<div class="wrap">
+
+<p class="section-label">Your Selection</p>
 <div id="cart"></div>
 
 <div class="total-box">
-
-<h3>Total: QAR <span id="total">0</span></h3>
-
-<button class="order" onclick="openPopup()">
-Place Order
-</button>
+<h3>Order Total</h3>
+<div class="total-amount"><span class="code">QAR</span><span id="total">0</span></div>
+<button class="order" onclick="openPopup()">Place Order</button>
+</div>
 
 </div>
 
@@ -216,7 +387,7 @@ Submit Order
 <h3>✅ Thank You!</h3>
 
 <p>
-Thank you for reaching <b>ChatFish</b> 🐟  
+Thank you for reaching <b>ChatFish</b> 🐟<br>
 Our member will deliver your fish soon.
 </p>
 
@@ -255,8 +426,7 @@ container.innerHTML += `
 
 <div>
 <b>${item.name}</b>
-<p>${qty} kg</p>
-<p>QAR ${price}</p>
+<p>${qty} kg &middot; QAR ${price}</p>
 </div>
 
 <button class="remove" onclick="removeItem(${index})">
@@ -305,7 +475,7 @@ let price=Number(item.price)*qty
 
 orderTotal+=price
 
-itemsHTML += `<p>${item.name} - ${qty}kg - QAR ${price}</p>`
+itemsHTML += `<p>${item.name} — ${qty}kg — QAR ${price}</p>`
 
 orderText += `${item.name} - ${qty}kg - QAR ${price}\n`
 
@@ -360,6 +530,19 @@ if(result.success){
 
 document.getElementById("orderPopup").style.display="none"
 document.getElementById("thankPopup").style.display="flex"
+
+let customerName = data.get("customer_name")
+let orderDetails = data.get("order_details")
+
+let whatsappMessage =
+`New ChatFish Order\n\nCustomer: ${customerName}\n\n${orderDetails}`
+
+let whatsappNumber = "919656963001"
+
+let whatsappURL =
+"https://wa.me/"+whatsappNumber+"?text="+encodeURIComponent(whatsappMessage)
+
+window.open(whatsappURL, "_blank")
 
 localStorage.removeItem("cart")
 
