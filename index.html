@@ -339,18 +339,18 @@
 <script>
 
 /* ===== GOOGLE SHEET CONFIG =====
-Paste your "Publish to web" CSV link below.
+Edit this sheet directly (no form) to add, update, or remove products.
 Google Sheets > File > Share > Publish to web >
-select the responses sheet > CSV > Publish > copy the link.
+select the sheet > CSV > Publish > copy the link.
 
 Your sheet's column headers are:
-Timestamp | Fish name | Price | Img Link | Stock
+Fish name | Price | Img Link | Stock
 
-Your form's "Stock" question should offer exactly these choices:
+Fill "Stock" with exactly one of:
 In Stock | Out of Stock | Remove
 =============================== */
 
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmq1Ce-Qw7C7aLuwI8WBeJyQX7AEWCSEiGHmtD_JxWGcFsmJ8baclRF6zliH3JXDWUZs3qfDuEUvxZ/pub?gid=190503896&single=true&output=csv"
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeQAgyXCo9ahBWNATP6Qroq5iA4kbfoV7AJ7X3XC4BTuZUK3iKykppEp6FAUheCAwYaPLg_SjU8fqp/pub?gid=284406170&single=true&output=csv"
 
 function formatUpdated(timestamp){
 
