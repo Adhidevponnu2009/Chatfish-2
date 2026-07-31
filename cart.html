@@ -95,8 +95,10 @@
     border-radius:var(--radius);
     margin-bottom:12px;
     display:flex;
+    flex-wrap:wrap;
     justify-content:space-between;
     align-items:center;
+    gap:12px;
     transition:box-shadow .2s ease, transform .2s ease;
   }
   .cart-item:hover{
@@ -114,6 +116,57 @@
     font-family:'JetBrains Mono', monospace;
     font-size:0.85em;
     color:var(--ink-soft);
+  }
+
+  .item-controls{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .qty-stepper{
+    display:inline-flex;
+    align-items:center;
+    background:var(--cream);
+    border-radius:8px;
+    border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .qty-stepper button{
+    width:32px;
+    height:32px;
+    border:none;
+    background:transparent;
+    color:var(--navy);
+    font-size:1.1em;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .qty-stepper button:hover{background:var(--teal-light);}
+  .qty-stepper span{
+    min-width:26px;
+    text-align:center;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size:0.9em;
+  }
+
+  .type-select{
+    padding:8px 10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--cream);
+    font-family:'Work Sans', sans-serif;
+    font-size:0.82em;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .type-select:focus{
+    outline:none;
+    border-color:var(--teal);
   }
 
   .remove{
@@ -416,6 +469,7 @@ container.innerHTML="<p>Your cart is empty</p>"
 cart.forEach((item,index)=>{
 
 let qty = item.qty || 1
+let type = item.type || "Whole"
 let price = Number(item.price)*qty
 
 total += price
@@ -429,9 +483,24 @@ container.innerHTML += `
 <p>${qty} kg &middot; QAR ${price}</p>
 </div>
 
+<div class="item-controls">
+
+<div class="qty-stepper">
+<button onclick="changeQty(${index},-1)">−</button>
+<span>${qty}</span>
+<button onclick="changeQty(${index},1)">+</button>
+</div>
+
+<select class="type-select" onchange="changeType(${index},this.value)">
+<option value="Whole" ${type==="Whole" ? "selected" : ""}>Whole</option>
+<option value="Piece" ${type==="Piece" ? "selected" : ""}>Piece</option>
+</select>
+
 <button class="remove" onclick="removeItem(${index})">
 Remove
 </button>
+
+</div>
 
 </div>
 
@@ -440,6 +509,35 @@ Remove
 })
 
 document.getElementById("total").innerText = total
+
+/* CHANGE QUANTITY */
+
+function changeQty(i,delta){
+
+let qty = cart[i].qty || 1
+qty += delta
+
+if(qty < 1){
+return
+}
+
+cart[i].qty = qty
+
+localStorage.setItem("cart",JSON.stringify(cart))
+
+location.reload()
+
+}
+
+/* CHANGE TYPE */
+
+function changeType(i,value){
+
+cart[i].type = value
+
+localStorage.setItem("cart",JSON.stringify(cart))
+
+}
 
 /* REMOVE ITEM */
 
@@ -471,13 +569,14 @@ let orderTotal=0
 cart.forEach(item=>{
 
 let qty=item.qty || 1
+let type=item.type || "Whole"
 let price=Number(item.price)*qty
 
 orderTotal+=price
 
-itemsHTML += `<p>${item.name} — ${qty}kg — QAR ${price}</p>`
+itemsHTML += `<p>${item.name} (${type}) — ${qty}kg — QAR ${price}</p>`
 
-orderText += `${item.name} - ${qty}kg - QAR ${price}\n`
+orderText += `${item.name} (${type}) - ${qty}kg - QAR ${price}\n`
 
 })
 
