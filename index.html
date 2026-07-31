@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
 <style>
   :root{
     --navy:#0B2545;
@@ -158,6 +160,13 @@
     font-weight:600;
   }
 
+  .product-card .updated{
+    margin:0 0 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72em;
+    color:#9aa2ad;
+  }
+
   .add-btn{
     background:var(--navy);
     color:white;
@@ -173,6 +182,39 @@
     transition:background .15s ease;
   }
   .add-btn:hover{background:var(--teal);}
+
+  .product-card.out-of-stock{
+    opacity:0.6;
+  }
+  .product-card.out-of-stock img{
+    filter:grayscale(60%);
+  }
+
+  .stock-badge{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7em;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    font-weight:600;
+    padding:3px 9px;
+    border-radius:999px;
+    margin-bottom:8px;
+  }
+  .stock-badge.in{
+    background:var(--teal-light);
+    color:var(--teal);
+  }
+  .stock-badge.out{
+    background:#fbe4e1;
+    color:var(--coral-dark);
+  }
+
+  .add-btn:disabled{
+    background:#cbd2da;
+    color:#6b7280;
+    cursor:not-allowed;
+  }
 
   /* FLOATING CART */
   .floating-cart{
@@ -296,32 +338,93 @@
 
 <script>
 
-let API="https://api.sheety.co/99421662e3bb8e48529b587c457d21b8/fishShop/sheet1"
+/* ===== GOOGLE SHEET CONFIG =====
+Paste your "Publish to web" CSV link below.
+Google Sheets > File > Share > Publish to web >
+select the responses sheet > CSV > Publish > copy the link.
 
-fetch(API)
+Your sheet's column headers are:
+Timestamp | Fish name | Price | Img ink | Stock
+=============================== */
+
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmq1Ce-Qw7C7aLuwI8WBeJyQX7AEWCSEiGHmtD_JxWGcFsmJ8baclRF6zliH3JXDWUZs3qfDuEUvxZ/pub?gid=190503896&single=true&output=csv"
+
+function formatUpdated(timestamp){
+
+if(!timestamp || String(timestamp).trim() === ""){
+return null
+}
+
+let d = new Date(timestamp)
+
+if(isNaN(d.getTime())){
+return String(timestamp)
+}
+
+return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }) +
+" · " +
+d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
+
+}
+
+fetch(SHEET_CSV_URL)
 .then(response => {
 
 if(!response.ok){
 throw new Error("Network response not OK")
 }
 
-return response.json()
+return response.text()
 
 })
 
-.then(data => {
+.then(csvText => {
 
-console.log("API DATA:",data)
+let parsed = Papa.parse(csvText, { header:true, skipEmptyLines:true })
+
+console.log("SHEET DATA:", parsed.data)
 
 let container=document.getElementById("products")
 
 container.classList.remove("loading")
 container.innerHTML=""
 
-let products=(data.sheet1 || []).filter(p =>
+let rows = parsed.data.map(r => ({
+fish:r["Fish name"],
+price:r["Price"],
+imageLink:r["Img ink"],
+inStock:r["Stock"],
+timestamp:r["Timestamp"]
+}))
+
+/* Keep only the most recent submission per fish name,
+so resubmitting the form updates or removes a product
+without ever editing the sheet directly. */
+
+let latestByFish = {}
+
+rows.forEach(r=>{
+
+if(!r.fish || String(r.fish).trim() === ""){
+return
+}
+
+let key = String(r.fish).trim().toLowerCase()
+let time = new Date(r.timestamp).getTime() || 0
+
+if(!latestByFish[key] || time >= latestByFish[key]._time){
+latestByFish[key] = { ...r, _time:time }
+}
+
+})
+
+let deduped = Object.values(latestByFish)
+
+let products=deduped.filter(p =>
 p.fish && String(p.fish).trim() !== "" &&
 p.price !== undefined && p.price !== null && String(p.price).trim() !== "" &&
-p.imageLink && String(p.imageLink).trim() !== ""
+p.imageLink && String(p.imageLink).trim() !== "" &&
+String(p.inStock).trim().toLowerCase() !== "remove"
 )
 
 if(products.length === 0){
@@ -334,18 +437,25 @@ return
 
 products.forEach(p=>{
 
+let inStock = String(p.inStock).trim().toLowerCase() === "yes"
+let updated = formatUpdated(p.timestamp)
+
 container.innerHTML += `
 
-<div class="product-card">
+<div class="product-card ${inStock ? "" : "out-of-stock"}">
 
 <img src="${p.imageLink}" alt="${p.fish}">
+
+<span class="stock-badge ${inStock ? "in" : "out"}">${inStock ? "In Stock" : "Out of Stock"}</span>
 
 <h3>${p.fish}</h3>
 
 <p class="price">Fresh today &middot; <strong>QAR ${p.price}</strong></p>
 
-<button class="add-btn" onclick="addToCart('${p.fish}','${p.price}',this)">
-Add to Cart
+${updated ? `<p class="updated">Last updated: ${updated}</p>` : ""}
+
+<button class="add-btn" ${inStock ? "" : "disabled"} onclick="addToCart('${p.fish}','${p.price}',this)">
+${inStock ? "Add to Cart" : "Out of Stock"}
 </button>
 
 </div>
