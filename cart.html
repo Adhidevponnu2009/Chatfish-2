@@ -316,8 +316,56 @@
     font-weight:600;
     font-size:0.9em;
     transition:background .15s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
   }
   .location:hover{background:#d3efec;}
+  .location:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+  }
+
+  /* SMALL SPINNER FOR LOCATION BUTTON */
+  .mini-spinner{
+    width:14px;
+    height:14px;
+    border:2px solid rgba(11,37,69,0.25);
+    border-top-color:var(--navy);
+    border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    display:inline-block;
+  }
+
+  @keyframes spin{
+    to{ transform:rotate(360deg); }
+  }
+
+  /* LOCATION LOADING OVERLAY (its own small "tab") */
+  .location-loading-box{
+    display:none;
+    align-items:center;
+    gap:10px;
+    background:var(--teal-light);
+    border:1px solid var(--teal);
+    color:var(--navy);
+    padding:10px 12px;
+    border-radius:9px;
+    margin-top:10px;
+    font-family:'Work Sans', sans-serif;
+    font-size:0.88em;
+    font-weight:600;
+  }
+  .location-loading-box.show{
+    display:flex;
+  }
+  .location-loading-box .mini-spinner{
+    border-color:rgba(15,158,147,0.3);
+    border-top-color:var(--teal);
+    width:16px;
+    height:16px;
+  }
 
   /* SUBMIT BUTTON */
   .submit{
@@ -417,9 +465,14 @@
 
 <textarea name="address" id="custAddress" placeholder="Delivery Address" required></textarea>
 
-<button type="button" class="location" onclick="getLocation()">
+<button type="button" class="location" id="locationBtn" onclick="getLocation()">
 📍 Share Current Location
 </button>
+
+<div class="location-loading-box" id="locationLoading">
+<span class="mini-spinner"></span>
+<span>Detecting your location…</span>
+</div>
 
 <button type="submit" class="submit">
 Submit Order
@@ -597,7 +650,16 @@ alert("Location not supported")
 return
 }
 
-navigator.geolocation.getCurrentPosition(function(pos){
+let btn = document.getElementById("locationBtn")
+let loadingBox = document.getElementById("locationLoading")
+
+/* show the "adding location" loading tab and lock the button */
+btn.disabled = true
+btn.innerHTML = '<span class="mini-spinner"></span><span>Locating…</span>'
+loadingBox.classList.add("show")
+
+navigator.geolocation.getCurrentPosition(
+function(pos){
 
 let lat=pos.coords.latitude
 let lon=pos.coords.longitude
@@ -605,7 +667,23 @@ let lon=pos.coords.longitude
 document.getElementById("custAddress").value =
 "https://maps.google.com/?q="+lat+","+lon
 
-})
+/* hide loading state once the field is filled */
+loadingBox.classList.remove("show")
+btn.disabled = false
+btn.innerHTML = "📍 Location Added"
+
+},
+function(err){
+
+/* hide loading state on error too, and let the user retry */
+loadingBox.classList.remove("show")
+btn.disabled = false
+btn.innerHTML = "📍 Share Current Location"
+alert("Could not get your location. Please allow location access and try again.")
+
+},
+{ enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+)
 
 }
 
@@ -631,10 +709,12 @@ document.getElementById("orderPopup").style.display="none"
 document.getElementById("thankPopup").style.display="flex"
 
 let customerName = data.get("customer_name")
+let phone = data.get("phone")
+let address = data.get("address")
 let orderDetails = data.get("order_details")
 
 let whatsappMessage =
-`New ChatFish Order\n\nCustomer: ${customerName}\n\n${orderDetails}`
+`New ChatFish Order\n\nCustomer: ${customerName}\nPhone: ${phone}\n\n${orderDetails}\n\nDelivery Address:\n${address}`
 
 let whatsappNumber = "97450366227"
 
@@ -688,4 +768,5 @@ circle.remove()
 
 </body>
 </html>
+
 
